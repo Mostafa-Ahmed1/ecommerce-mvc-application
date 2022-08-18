@@ -68,6 +68,7 @@
     <script src="https://www.paypalobjects.com/api/checkout.js"></script>
 
     <script>
+        let total = @Html.Raw(Model.ShoppingCartTotal);
         paypal.Button.render({
 
             // Configure environment
@@ -87,11 +88,23 @@
 
             // Setup a payment
             payment: function (data, actions){
-                console.log("payment setup");
+                return actions.payment.create({
+                    transactions:[{
+                        amount: {
+                            total: total,
+                            currency: 'USD'
+                        }
+                    }]
+                });
             },
+
             // Execute the payment
             onAuthorize: function (data, actions){
-                console.log("payment executed");
+                return actions.payment.execute().then(function () {
+                    var url = '@Url.Action("CompleteOrder","Orders",new { })';
+                    //var url = "htts://localhost:44373/Orders/CompleteOrder";
+                    window.location.href = url;
+                });
             }
 
         }, '#paypal-btn');
